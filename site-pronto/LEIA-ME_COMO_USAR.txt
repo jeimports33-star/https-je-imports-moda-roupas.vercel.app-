@@ -1,0 +1,54 @@
+================================================================================
+JE IMPORTS - SITE COMPLETO PRONTO PARA HOSPEDAGEM (PASTA ÚNICA)
+================================================================================
+
+Parabéns! Esta pasta contém todos os arquivos essenciais e compilados do seu
+site funcionando em uma única pasta independente, sem precisar instalar Node.js
+ou rodar comandos no seu computador.
+
+--------------------------------------------------------------------------------
+O QUE TEM NESTA PASTA:
+--------------------------------------------------------------------------------
+1. index.html          -> O arquivo principal da sua loja.
+2. assets/             -> Todos os códigos, estilos e ícones empacotados.
+3. je_lion_logo.jpg    -> A foto da logo oficial do Leão Dourado.
+
+--------------------------------------------------------------------------------
+COMO COLOCAR O SEU SITE NO AR (ONLINE):
+--------------------------------------------------------------------------------
+
+OPÇÃO A: HOSPEDAGEM TRADICIONAL (Hostinger, cPanel, Locaweb, KingHost, etc.)
+1. Acesse o gerenciador de arquivos da sua hospedagem (geralmente a pasta "public_html").
+2. Envie o arquivo index.html e a pasta assets/ que estão aqui dentro.
+3. Seu site estará funcionando imediatamente no seu domínio!
+
+OPÇÃO B: HOSPEDAGEM GRATUITA (Netlify - Super Fácil)
+1. Acesse https://app.netlify.com/drop
+2. Arraste esta pasta inteira "site-pronto" para a tela.
+3. Em 10 segundos seu site estará no ar na internet com link público e certificado SSL grátis!
+
+OPÇÃO C: HOSPEDAGEM GRATUITA (Vercel)
+1. Acesse https://vercel.com
+2. Crie um novo projeto importando os arquivos estáticos desta pasta.
+
+--------------------------------------------------------------------------------
+ACESSO DO ADMINISTRADOR (GERENCIAR CATÁLOGO & ESTOQUE):
+--------------------------------------------------------------------------------
+Para segurança da sua loja, o botão "Gerenciar Catálogo" é protegido por senha:
+
+- Senha inicial padrão: admin123
+- Como alterar: Após desbloquear o painel, clique na aba "Senha do Admin"
+  e cadastre a sua nova senha pessoal.
+- Para sair ou bloquear o painel a qualquer momento, clique no botão "Bloquear Painel".
+
+--------------------------------------------------------------------------------
+COMO ABRIR LOCALMENTE NO COMPUTADOR:
+--------------------------------------------------------------------------------
+Como os navegadores modernos bloqueiam módulos locais por segurança (CORS),
+para testar no computador você pode:
+- Usar qualquer extensão de servidor local (ex: "Live Server" no VS Code)
+- Ou simplesmente rodar no terminal desta pasta:
+    npx serve
+  ou
+    python3 -m http.server 8000
+================================================================================

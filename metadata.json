@@ -1,0 +1,6 @@
+{
+  "name": "JE Imports - Moda & Roupas",
+  "description": "Loja de roupas completa com catálogo dinâmico sincronizado em tempo real, gerenciamento de estoque, checkout simplificado e pagamentos via PIX instantâneo com QR Code oficial e Cartão de Débito ou Crédito.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

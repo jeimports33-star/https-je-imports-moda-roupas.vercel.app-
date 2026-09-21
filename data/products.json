@@ -1,0 +1,434 @@
+[
+  {
+    "id": "prod-1",
+    "name": "Jaqueta Puffer Oversized Techwear Matte Black",
+    "category": "casacos",
+    "price": 389.9,
+    "originalPrice": 489.9,
+    "description": "Jaqueta puffer unissex confeccionada com tecido impermeável ripstop, isolamento térmico ultra leve e forro respirável. Modelagem boxy moderna com zíper duplo frontal e bolsos laterais com fechamento embutido.",
+    "images": [
+      "https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [
+      {
+        "name": "Preto Fosco",
+        "hex": "#171717"
+      },
+      {
+        "name": "Cinza Chumbo",
+        "hex": "#334155"
+      },
+      {
+        "name": "Verde Militar",
+        "hex": "#3f4f3e"
+      }
+    ],
+    "stock": 14,
+    "featured": true,
+    "isNew": true,
+    "isSale": true,
+    "gender": "unissex",
+    "material": "100% Poliamida com membrana hidrofóbica",
+    "sku": "JE-JKT-001"
+  },
+  {
+    "id": "prod-2",
+    "name": "Camiseta Heavyweight Vintage Washed 260 GSM",
+    "category": "camisetas",
+    "price": 139.9,
+    "originalPrice": 179.9,
+    "description": "Camiseta de alta gramatura (260 g/m²) produzida em 100% algodão penteado fio 20.1 sustentável com acabamento vintage stone wash. Gola canelada de 3cm com costura reforçada ombro a ombro.",
+    "images": [
+      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "PP",
+      "P",
+      "M",
+      "G",
+      "GG",
+      "XG"
+    ],
+    "colors": [
+      {
+        "name": "Off-White",
+        "hex": "#f5f5f0"
+      },
+      {
+        "name": "Preto Mineral",
+        "hex": "#222224"
+      },
+      {
+        "name": "Terracota",
+        "hex": "#b4533c"
+      }
+    ],
+    "stock": 28,
+    "featured": true,
+    "isSale": true,
+    "gender": "unissex",
+    "material": "100% Algodão Penteado 260g",
+    "sku": "JE-TSH-002"
+  },
+  {
+    "id": "prod-3",
+    "name": "Moletom Hoodie Heavy Minimalist Logo",
+    "category": "streetwear",
+    "price": 269,
+    "originalPrice": 320,
+    "description": "Moletom com capuz e forro duplo, confeccionado em moletom felpado 3 cabos 380 GSM com toque macio e caimento encorpado. Bolso canguru frontal estruturado e punhos reforçados em ribana 2x1.",
+    "images": [
+      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [
+      {
+        "name": "Areia Sand",
+        "hex": "#d6cbbe"
+      },
+      {
+        "name": "Preto Puro",
+        "hex": "#111111"
+      },
+      {
+        "name": "Azul Petróleo",
+        "hex": "#1e3a47"
+      }
+    ],
+    "stock": 19,
+    "featured": true,
+    "isNew": false,
+    "isSale": false,
+    "gender": "unissex",
+    "material": "80% Algodão Premium, 20% Poliéster",
+    "sku": "JE-HD-003"
+  },
+  {
+    "id": "prod-4",
+    "name": "Calça Cargo Utility Tapered 8 Bolsos",
+    "category": "calcas",
+    "price": 249.9,
+    "description": "Calça cargo com modelagem relaxed tapered, tecido sarja peletizada resistente de toque aveludado. Conta com 8 bolsos funcionais utilitários, ajuste elástico na cintura com cordão de alta densidade e barra ajustável.",
+    "images": [
+      "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "38",
+      "40",
+      "42",
+      "44"
+    ],
+    "colors": [
+      {
+        "name": "Verde Oliva",
+        "hex": "#485340"
+      },
+      {
+        "name": "Preto Tático",
+        "hex": "#1f1f1f"
+      },
+      {
+        "name": "Cáqui Desert",
+        "hex": "#c2b280"
+      }
+    ],
+    "stock": 12,
+    "featured": false,
+    "isNew": true,
+    "isSale": false,
+    "gender": "masculino",
+    "material": "98% Algodão, 2% Elastano Ripstop",
+    "sku": "JE-CRG-004"
+  },
+  {
+    "id": "prod-5",
+    "name": "Jaqueta Jeans Trucker Vintage Oversized",
+    "category": "casacos",
+    "price": 319,
+    "originalPrice": 389,
+    "description": "Ícone atemporal redefinido com proporções contemporâneas. Denim pesado 13.5 oz com lavagem estonada manual e desgastes sutis que dão visual autêntico de peça única dos anos 90.",
+    "images": [
+      "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1516257984-b1b4d707412e?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [
+      {
+        "name": "Azul Vintage",
+        "hex": "#466289"
+      },
+      {
+        "name": "Denim Black Washed",
+        "hex": "#34383c"
+      }
+    ],
+    "stock": 8,
+    "featured": true,
+    "isSale": true,
+    "gender": "unissex",
+    "material": "100% Algodão Puro Denim 13.5oz",
+    "sku": "JE-JNS-005"
+  },
+  {
+    "id": "prod-6",
+    "name": "Camisa Linho Relaxed Manga Curta Resort",
+    "category": "camisetas",
+    "price": 199.9,
+    "description": "Camisa resort casual de gola cubana estruturada, corte amplo fluido em nobre mescla de linho com viscose para respirabilidade máxima nos dias quentes e toque sedoso na pele.",
+    "images": [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [
+      {
+        "name": "Branco Linho",
+        "hex": "#faf7f2"
+      },
+      {
+        "name": "Areia Natural",
+        "hex": "#d9cdb8"
+      },
+      {
+        "name": "Verde Salvia",
+        "hex": "#879782"
+      }
+    ],
+    "stock": 22,
+    "featured": false,
+    "isNew": true,
+    "gender": "masculino",
+    "material": "55% Linho Puro, 45% Viscose",
+    "sku": "JE-SHR-006"
+  },
+  {
+    "id": "prod-7",
+    "name": "Vestido Midi Canelado Cut-Out Minimalista",
+    "category": "vestidos",
+    "price": 219,
+    "originalPrice": 259,
+    "description": "Vestido midi em malha ribana canelada encorpada com modelagem ajustada que valoriza a silhueta. Detalhe sutil de recorte cut-out na lateral da cintura e fenda traseira para mobilidade elegante.",
+    "images": [
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "PP",
+      "P",
+      "M",
+      "G"
+    ],
+    "colors": [
+      {
+        "name": "Preto Noite",
+        "hex": "#121212"
+      },
+      {
+        "name": "Mocha Brown",
+        "hex": "#634b3f"
+      },
+      {
+        "name": "Creme Off",
+        "hex": "#f0ece1"
+      }
+    ],
+    "stock": 15,
+    "featured": true,
+    "isSale": true,
+    "gender": "feminino",
+    "material": "92% Viscose Vortex, 8% Elastano",
+    "sku": "JE-DRS-007"
+  },
+  {
+    "id": "prod-8",
+    "name": "Tênis Chunky Urban Leather Walk",
+    "category": "calcados",
+    "price": 459.9,
+    "originalPrice": 549.9,
+    "description": "Sneaker urbano com cabedal em couro legítimo nobuck combinado com malha respirável técnica. Entressola em EVA expandido com amortecimento dinâmico e solado de borracha vulcanizada de alta tração.",
+    "images": [
+      "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "38",
+      "40",
+      "42",
+      "44"
+    ],
+    "colors": [
+      {
+        "name": "Triple White",
+        "hex": "#f8fafc"
+      },
+      {
+        "name": "Monochrome Black",
+        "hex": "#1e2022"
+      }
+    ],
+    "stock": 10,
+    "featured": true,
+    "isSale": true,
+    "gender": "unissex",
+    "material": "Couro Bovino Nobuck e EVA UltraLight",
+    "sku": "JE-SNK-008"
+  },
+  {
+    "id": "prod-9",
+    "name": "Boné Dad Hat 6 Painéis Bordado JE Logo",
+    "category": "acessorios",
+    "price": 89.9,
+    "description": "Boné estilo dad cap desestruturado em sarja 100% algodão pré-lavada. Bordado frontal em alta definição, fecho traseiro strapback com fivela metálica personalizada em latão envelhecido.",
+    "images": [
+      "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "P",
+      "M",
+      "G"
+    ],
+    "colors": [
+      {
+        "name": "Preto Carbono",
+        "hex": "#18181b"
+      },
+      {
+        "name": "Verde Floresta",
+        "hex": "#233827"
+      },
+      {
+        "name": "Bege Raw",
+        "hex": "#eae3d2"
+      }
+    ],
+    "stock": 45,
+    "featured": false,
+    "isNew": false,
+    "gender": "unissex",
+    "material": "100% Sarja de Algodão 280g",
+    "sku": "JE-ACC-009"
+  },
+  {
+    "id": "prod-10",
+    "name": "Shoulder Bag Crossbody Tactical Cordura",
+    "category": "acessorios",
+    "price": 119.9,
+    "originalPrice": 149.9,
+    "description": "Bolsa tiracolo utilitária confeccionada em tecido impermeável tipo Cordura 600D. Possui 3 compartimentos com zíperes vedados, alça ajustável destacável e mosquetão frontal em polímero reforçado.",
+    "images": [
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "M"
+    ],
+    "colors": [
+      {
+        "name": "Preto Grafite",
+        "hex": "#202020"
+      },
+      {
+        "name": "Camuflado Urbano",
+        "hex": "#525c58"
+      }
+    ],
+    "stock": 25,
+    "featured": false,
+    "isSale": true,
+    "gender": "unissex",
+    "material": "Nylon Cordura 600D Impermeável",
+    "sku": "JE-BAG-010"
+  },
+  {
+    "id": "prod-11",
+    "name": "Bermuda Sweatpants Heavy Terry Relaxed",
+    "category": "calcas",
+    "price": 159.9,
+    "description": "Shorts de moletom sem felpa (French Terry) de gramatura pesada 320 GSM. Cós com elástico largo e ilhós em metal fosco, bolsos frontais fundos com corte faca e bolso traseiro com etiqueta bordada.",
+    "images": [
+      "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [
+      {
+        "name": "Cinza Mescla Claro",
+        "hex": "#d1d5db"
+      },
+      {
+        "name": "Preto Deep",
+        "hex": "#0f0f10"
+      }
+    ],
+    "stock": 18,
+    "featured": false,
+    "isNew": true,
+    "gender": "masculino",
+    "material": "100% Algodão French Terry",
+    "sku": "JE-SHR-011"
+  },
+  {
+    "id": "prod-12",
+    "name": "Camiseta Graphic Tee \"Tokyo Underground\" 90s",
+    "category": "streetwear",
+    "price": 149.9,
+    "description": "Estampa conceitual em serigrafia de alta definição (silk screen discharge) que não racha nem desbota. Caimento streetwear solto no corpo, mangas alongadas e gola encorpada.",
+    "images": [
+      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1503342394128-c104d54dba01?auto=format&fit=crop&w=1000&q=80"
+    ],
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG",
+      "XG"
+    ],
+    "colors": [
+      {
+        "name": "Preto Charcoal",
+        "hex": "#1a1a1a"
+      },
+      {
+        "name": "Branco Neve",
+        "hex": "#ffffff"
+      }
+    ],
+    "stock": 30,
+    "featured": true,
+    "isNew": true,
+    "gender": "unissex",
+    "material": "100% Algodão Premium Fio Penteado",
+    "sku": "JE-GRA-012"
+  }
+]
