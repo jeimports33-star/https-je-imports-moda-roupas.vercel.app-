@@ -17,7 +17,8 @@ import {
   OFFICIAL_PIX_KEY, 
   OFFICIAL_PIX_CITY,
   buildPixEMVPayload,
-  formatCurrency
+  formatCurrency,
+  copyToClipboard
 } from '../utils/paymentUtils';
 import { PixQrCode } from './PixQrCode';
 import { useStore } from '../context/StoreContext';
@@ -47,15 +48,15 @@ export const PixGeneratorModal: React.FC<PixGeneratorModalProps> = ({ isOpen, on
     txid: '***',
   });
 
-  const handleCopyKey = () => {
-    navigator.clipboard.writeText(OFFICIAL_PIX_KEY);
+  const handleCopyKey = async () => {
+    await copyToClipboard(OFFICIAL_PIX_KEY);
     setCopiedKey(true);
     showToast('Chave PIX (jeimports33@gmail.com) copiada!', 'success');
     setTimeout(() => setCopiedKey(false), 3000);
   };
 
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(currentPixCode);
+  const handleCopyCode = async () => {
+    await copyToClipboard(currentPixCode);
     setCopiedCode(true);
     showToast('Código PIX Copia e Cola copiado com sucesso!', 'success');
     setTimeout(() => setCopiedCode(false), 3000);

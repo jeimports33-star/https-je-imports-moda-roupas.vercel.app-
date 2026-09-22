@@ -33,9 +33,12 @@ import {
   MapPin,
   ExternalLink,
   Calendar,
-  Filter
+  Filter,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 import { ClothingCategory, ClothingSize, ProductColor, Product, Order } from '../types';
+import { uploadImageToServer } from '../utils/imageCompressor';
 import { 
   formatCurrency,
   OFFICIAL_PIX_CODE,
@@ -75,9 +78,14 @@ export const AdminCatalogModal: React.FC = () => {
     updateOrderStatus,
     activeOrdersCount,
     deliveredOrdersCount,
+    isServerConnected,
+    lastSyncTime,
+    syncCatalogWithServer,
     showToast
   } = useStore();
 
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [activeTab, setActiveTab] = useState<'list' | 'add' | 'orders' | 'logo' | 'security' | 'pix'>('list');
   const [searchTerm, setSearchTerm] = useState('');
   const [orderSearchTerm, setOrderSearchTerm] = useState('');
@@ -289,77 +297,88 @@ export const AdminCatalogModal: React.FC = () => {
     setEditDescription(prod.description);
     setEditGender(prod.gender);
     setEditMaterial(prod.material || '');
-    setEditStock(prod.stock);
-    setEditImageUrl(prod.images[0] || '');
-    setEditSelectedSizes([...prod.sizes]);
-    setEditColors([...prod.colors]);
+    setEditStock(prod.stock || 0);
+    setEditImageUrl(prod.images?.[0] || '');
+    setEditSelectedSizes([...(prod.sizes || ['M'])]);
+    setEditColors([...(prod.colors || [{ name: 'Padrão', hex: '#111111' }])]);
     setEditIsNew(Boolean(prod.isNew));
     setEditIsSale(Boolean(prod.isSale));
   };
 
   // Save changes to edited product
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct || !editName.trim()) return;
 
-    updateProduct(editingProduct.id, {
+    const finalImage = editImageUrl.trim() || editingProduct.images?.[0] || PRESET_IMAGES[0];
+    const finalPrice = Math.max(0, Number(editPrice) || 0);
+    const finalOrigPrice = editOriginalPrice ? Math.max(0, Number(editOriginalPrice)) : undefined;
+    const finalStock = Math.max(0, Number(editStock) || 0);
+
+    await updateProduct(editingProduct.id, {
       name: editName.trim(),
       category: editCategory,
-      price: Number(editPrice),
-      originalPrice: editOriginalPrice ? Number(editOriginalPrice) : undefined,
+      price: finalPrice,
+      originalPrice: finalOrigPrice,
       description: editDescription.trim(),
       gender: editGender,
       material: editMaterial.trim(),
-      stock: Number(editStock),
-      images: [editImageUrl.trim() || editingProduct.images[0]],
+      stock: finalStock,
+      images: [finalImage],
       sizes: editSelectedSizes.length > 0 ? editSelectedSizes : ['M'],
       colors: editColors.length > 0 ? editColors : [{ name: 'Padrão', hex: '#000000' }],
       isNew: editIsNew,
       isSale: editIsSale,
     });
 
-    showToast(`Peça "${editName}" atualizada com sucesso!`, 'success');
     setEditingProduct(null);
   };
 
-  // Image Upload helper using FileReader
-  const handleFileUpload = (
+  // Image Upload helper using modern client compression and server upload
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>, 
     target: 'add' | 'edit'
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        if (target === 'add') {
-          setImageUrl(result);
-          showToast('Foto carregada do dispositivo!', 'success');
-        } else {
-          setEditImageUrl(result);
-          showToast('Foto da peça atualizada!', 'success');
-        }
+    setIsUploadingImage(true);
+    showToast('Otimizando foto e enviando ao servidor...', 'info');
+
+    try {
+      const serverUrl = await uploadImageToServer(file);
+      if (target === 'add') {
+        setImageUrl(serverUrl);
+        showToast('Foto carregada e salva no servidor com sucesso!', 'success');
+      } else {
+        setEditImageUrl(serverUrl);
+        showToast('Foto da peça atualizada e pronta para salvar!', 'success');
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error('Erro ao enviar imagem:', err);
+      showToast('Não foi possível enviar a foto. Tente novamente.', 'error');
+    } finally {
+      setIsUploadingImage(false);
+      // reset file input
+      e.target.value = '';
+    }
   };
 
-  const handleLogoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        setCustomLogoUrl(result);
-        setLogoInput(result);
-        showToast('Foto do Leão da logo atualizada com sucesso!', 'success');
-      }
-    };
-    reader.readAsDataURL(file);
+    showToast('Otimizando foto do Leão...', 'info');
+    try {
+      const serverUrl = await uploadImageToServer(file);
+      setCustomLogoUrl(serverUrl);
+      setLogoInput(serverUrl);
+      showToast('Foto do Leão da logo atualizada com sucesso para todos!', 'success');
+    } catch (err) {
+      showToast('Erro ao carregar foto do logo.', 'error');
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const handleSaveLogoUrl = (e: React.FormEvent) => {
@@ -420,20 +439,20 @@ export const AdminCatalogModal: React.FC = () => {
     }
   };
 
-  const handleCreateProduct = (e: React.FormEvent) => {
+  const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    addProduct({
+    await addProduct({
       name: name.trim(),
       category,
-      price: Number(price),
-      originalPrice: originalPrice ? Number(originalPrice) : undefined,
+      price: Math.max(0, Number(price) || 0),
+      originalPrice: originalPrice ? Math.max(0, Number(originalPrice)) : undefined,
       description: description.trim() || 'Peça autêntica JE Imports com acabamento premium e modelagem exclusiva.',
-      images: [imageUrl],
+      images: [imageUrl.trim() || PRESET_IMAGES[0]],
       sizes: selectedSizes,
       colors,
-      stock: Number(stock),
+      stock: Math.max(0, Number(stock) || 0),
       gender,
       material,
       isNew,
@@ -482,6 +501,28 @@ export const AdminCatalogModal: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Real-time Server Sync Button */}
+            <button
+              type="button"
+              onClick={async () => {
+                setIsSyncing(true);
+                await syncCatalogWithServer();
+                setIsSyncing(false);
+              }}
+              disabled={isSyncing}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                isServerConnected 
+                  ? 'bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-300 border-emerald-700/60 shadow-xs' 
+                  : 'bg-amber-950/70 hover:bg-amber-900/80 text-amber-300 border-amber-700/60'
+              }`}
+              title="Garante que as fotos e preços atuais estejam salvos no servidor para todos os visitantes"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">
+                {isSyncing ? 'Sincronizando...' : isServerConnected ? 'Sincronizado p/ Todos' : 'Reconectar'}
+              </span>
+            </button>
+
             <button
               type="button"
               onClick={() => {
@@ -654,7 +695,7 @@ export const AdminCatalogModal: React.FC = () => {
                           <div className="flex items-center gap-3">
                             <div className="relative w-12 h-14 rounded-lg overflow-hidden border border-neutral-200 shrink-0 bg-neutral-100">
                               <img
-                                src={prod.images[0]}
+                                src={prod.images?.[0] || PRESET_IMAGES[0]}
                                 alt={prod.name}
                                 className="w-full h-full object-cover"
                               />
@@ -721,7 +762,7 @@ export const AdminCatalogModal: React.FC = () => {
 
                         <td className="p-3">
                           <div className="flex flex-wrap gap-1 max-w-xs">
-                            {prod.sizes.map((sz) => (
+                            {(prod.sizes || []).map((sz) => (
                               <span key={sz} className="text-[10px] bg-neutral-100 text-neutral-800 font-bold px-1.5 py-0.5 rounded">
                                 {sz}
                               </span>
@@ -961,12 +1002,17 @@ export const AdminCatalogModal: React.FC = () => {
                         <span className="text-[11px] font-semibold text-neutral-600 block mb-1">
                           Opção 2: Carregar do seu celular ou computador:
                         </span>
-                        <label className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold rounded-xl border border-neutral-300 cursor-pointer shadow-xs transition-colors">
-                          <Upload className="w-3.5 h-3.5 text-neutral-600" />
-                          <span>Escolher foto do aparelho</span>
+                        <label className={`inline-flex items-center gap-2 px-3.5 py-1.5 bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold rounded-xl border border-neutral-300 cursor-pointer shadow-xs transition-colors ${isUploadingImage ? 'opacity-60 cursor-not-allowed' : ''}`}>
+                          {isUploadingImage ? (
+                            <Loader2 className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
+                          ) : (
+                            <Upload className="w-3.5 h-3.5 text-neutral-600" />
+                          )}
+                          <span>{isUploadingImage ? 'Enviando foto ao servidor...' : 'Escolher foto do aparelho'}</span>
                           <input
                             type="file"
                             accept="image/*"
+                            disabled={isUploadingImage}
                             onChange={(e) => handleFileUpload(e, 'add')}
                             className="hidden"
                           />
@@ -1768,26 +1814,26 @@ export const AdminCatalogModal: React.FC = () => {
                           {/* Items Ordered List */}
                           <div className="space-y-2">
                             <span className="text-xs font-bold text-neutral-700 block">
-                              Itens Solicitados ({order.items.reduce((acc, it) => acc + it.quantity, 0)} peça(s)):
+                              Itens Solicitados ({(order.items || []).reduce((acc, it) => acc + (it.quantity || 1), 0)} peça(s)):
                             </span>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              {order.items.map((it) => (
+                              {(order.items || []).map((it) => (
                                 <div
                                   key={it.id}
                                   className="flex items-center gap-3 p-2 rounded-xl bg-white border border-neutral-200 text-xs"
                                 >
                                   <img
-                                    src={it.product.images[0]}
-                                    alt={it.product.name}
+                                    src={it.product?.images?.[0] || 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=1000&q=80'}
+                                    alt={it.product?.name || 'Produto'}
                                     className="w-11 h-13 object-cover rounded-lg border shrink-0"
                                   />
                                   <div className="flex-1 min-w-0">
-                                    <p className="font-bold text-neutral-900 truncate">{it.product.name}</p>
+                                    <p className="font-bold text-neutral-900 truncate">{it.product?.name || 'Produto'}</p>
                                     <p className="text-[11px] text-neutral-500">
-                                      Tamanho: <strong>{it.selectedSize}</strong> • Cor: {it.selectedColor.name}
+                                      Tamanho: <strong>{it.selectedSize || 'M'}</strong> • Cor: {it.selectedColor?.name || 'Padrão'}
                                     </p>
                                     <p className="text-[11px] text-neutral-600">
-                                      {it.quantity}x {formatCurrency(it.product.price)} = <strong>{formatCurrency(it.product.price * it.quantity)}</strong>
+                                      {it.quantity}x {formatCurrency(it.product?.price || 0)} = <strong>{formatCurrency((it.product?.price || 0) * it.quantity)}</strong>
                                     </p>
                                   </div>
                                 </div>
@@ -1932,12 +1978,17 @@ export const AdminCatalogModal: React.FC = () => {
                           />
                         </div>
 
-                        <label className="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold rounded-lg border border-neutral-300 cursor-pointer shadow-xs">
-                          <Upload className="w-3.5 h-3.5 text-neutral-600" />
-                          <span>Carregar nova foto do aparelho</span>
+                        <label className={`inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold rounded-lg border border-neutral-300 cursor-pointer shadow-xs transition-colors ${isUploadingImage ? 'opacity-60 cursor-not-allowed' : ''}`}>
+                          {isUploadingImage ? (
+                            <Loader2 className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
+                          ) : (
+                            <Upload className="w-3.5 h-3.5 text-neutral-600" />
+                          )}
+                          <span>{isUploadingImage ? 'Enviando ao servidor...' : 'Carregar nova foto do aparelho'}</span>
                           <input
                             type="file"
                             accept="image/*"
+                            disabled={isUploadingImage}
                             onChange={(e) => handleFileUpload(e, 'edit')}
                             className="hidden"
                           />

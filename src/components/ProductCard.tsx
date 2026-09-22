@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Product } from '../types';
+import { Product, ClothingSize } from '../types';
 import { useStore } from '../context/StoreContext';
 import { Heart, ShoppingBag, Eye, Sparkles } from 'lucide-react';
 import { formatCurrency } from '../utils/paymentUtils';
@@ -21,21 +21,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
 
+  const fallbackImage = 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=1000&q=80';
+  const images = (product.images && product.images.length > 0) ? product.images : [fallbackImage];
+  const sizes = (product.sizes && product.sizes.length > 0) ? product.sizes : (['M'] as ClothingSize[]);
+  const colors = (product.colors && product.colors.length > 0) ? product.colors : [{ name: 'Padrão', hex: '#111111' }];
+
   const discountPercent = product.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
-  const pixPrice = product.price * 0.95; // 5% off no PIX
-  const installmentValue = product.price / 12;
+  const pixPrice = (product.price || 0) * 0.95; // 5% off no PIX
+  const installmentValue = (product.price || 0) / 12;
 
-  const activeImage = isHovered && product.images.length > 1 
-    ? product.images[1] 
-    : product.images[0];
+  const activeImage = isHovered && images.length > 1 
+    ? images[1] 
+    : images[0];
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const chosenSize = product.sizes[selectedSizeIndex] || product.sizes[0];
-    const chosenColor = product.colors[selectedColorIndex] || product.colors[0];
+    const chosenSize = sizes[selectedSizeIndex] || sizes[0];
+    const chosenColor = colors[selectedColorIndex] || colors[0];
     addToCart(product, chosenSize, chosenColor, 1);
     setIsCartOpen(true);
   };
@@ -57,6 +62,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           alt={product.name}
           className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = fallbackImage;
+          }}
         />
 
         {/* Top Badges */}
@@ -132,9 +140,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
             {/* Color swatches */}
             <div className="flex items-center gap-1">
-              {product.colors.map((c, i) => (
+              {colors.map((c, i) => (
                 <button
-                  key={c.name}
+                  key={c.name + i}
                   type="button"
                   onClick={() => setSelectedColorIndex(i)}
                   className={`w-3.5 h-3.5 rounded-full border transition-all ${
@@ -161,9 +169,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Sizes chips */}
         <div className="mt-2.5 pt-2 border-t border-neutral-100 flex items-center gap-1.5 overflow-x-auto">
           <span className="text-[10px] text-neutral-400 font-bold uppercase">Tam:</span>
-          {product.sizes.map((sz, i) => (
+          {sizes.map((sz, i) => (
             <button
-              key={sz}
+              key={sz + i}
               type="button"
               onClick={() => setSelectedSizeIndex(i)}
               className={`px-1.5 py-0.5 text-[10px] font-bold rounded transition-colors ${
@@ -181,7 +189,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="mt-3 pt-2.5 border-t border-neutral-100">
           <div className="flex items-baseline gap-2">
             <span className="font-display font-extrabold text-lg text-neutral-950">
-              {formatCurrency(product.price)}
+              {formatCurrency(product.price || 0)}
             </span>
             {product.originalPrice && (
               <span className="text-xs text-neutral-400 line-through">
@@ -206,7 +214,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="mt-3 w-full sm:hidden py-2 bg-neutral-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
-            <span>Adicionar ({product.sizes[selectedSizeIndex]})</span>
+            <span>Adicionar ({sizes[selectedSizeIndex] || sizes[0]})</span>
           </button>
         </div>
       </div>

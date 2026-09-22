@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { 
   X, 
@@ -32,16 +32,32 @@ export const ProductDetailModal: React.FC = () => {
 
   if (!selectedProduct) return null;
 
+  const fallbackImage = 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=1000&q=80';
+  const images = (selectedProduct.images && selectedProduct.images.length > 0) ? selectedProduct.images : [fallbackImage];
+  const sizes = (selectedProduct.sizes && selectedProduct.sizes.length > 0) ? selectedProduct.sizes : (['M'] as ClothingSize[]);
+  const colors = (selectedProduct.colors && selectedProduct.colors.length > 0) ? selectedProduct.colors : [{ name: 'Padrão', hex: '#111111' }];
+
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<ClothingSize>(selectedProduct.sizes[0]);
-  const [selectedColor, setSelectedColor] = useState<ProductColor>(selectedProduct.colors[0]);
+  const [selectedSize, setSelectedSize] = useState<ClothingSize>(sizes[0] || 'M');
+  const [selectedColor, setSelectedColor] = useState<ProductColor>(colors[0] || { name: 'Padrão', hex: '#111111' });
   const [quantity, setQuantity] = useState(1);
   const [cepInput, setCepInput] = useState('');
   const [shippingResults, setShippingResults] = useState<ShippingOption[] | null>(null);
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
 
-  const pixPrice = selectedProduct.price * 0.95;
-  const installmentValue = selectedProduct.price / 12;
+  // Sync state when selected product changes
+  useEffect(() => {
+    if (selectedProduct) {
+      setSelectedImageIndex(0);
+      setSelectedSize(sizes[0] || 'M');
+      setSelectedColor(colors[0] || { name: 'Padrão', hex: '#111111' });
+      setQuantity(1);
+      setShippingResults(null);
+    }
+  }, [selectedProduct?.id]);
+
+  const pixPrice = (selectedProduct.price || 0) * 0.95;
+  const installmentValue = (selectedProduct.price || 0) / 12;
 
   const handleAddToCart = () => {
     addToCart(selectedProduct, selectedSize, selectedColor, quantity);
@@ -93,9 +109,12 @@ export const ProductDetailModal: React.FC = () => {
           {/* Main Photo Display */}
           <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-neutral-200 shadow-inner">
             <img
-              src={selectedProduct.images[selectedImageIndex] || selectedProduct.images[0]}
+              src={images[selectedImageIndex] || images[0]}
               alt={selectedProduct.name}
               className="w-full h-full object-cover object-center transition-all duration-300"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = fallbackImage;
+              }}
             />
             {selectedProduct.isSale && (
               <span className="absolute top-3 left-3 bg-rose-600 text-white text-xs font-black px-2.5 py-1 rounded-md shadow-sm">
@@ -105,9 +124,9 @@ export const ProductDetailModal: React.FC = () => {
           </div>
 
           {/* Thumbnails */}
-          {selectedProduct.images.length > 1 && (
+          {images.length > 1 && (
             <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-1">
-              {selectedProduct.images.map((img, idx) => (
+              {images.map((img, idx) => (
                 <button
                   key={idx}
                   type="button"
@@ -196,11 +215,11 @@ export const ProductDetailModal: React.FC = () => {
                 <span className="text-neutral-700">Cor: <strong>{selectedColor.name}</strong></span>
               </div>
               <div className="flex items-center gap-2">
-                {selectedProduct.colors.map((color) => {
-                  const isSelected = selectedColor.name === color.name;
+                {colors.map((color, idx) => {
+                  const isSelected = selectedColor?.name === color.name;
                   return (
                     <button
-                      key={color.name}
+                      key={color.name + idx}
                       type="button"
                       onClick={() => setSelectedColor(color)}
                       className={`relative w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
@@ -235,11 +254,11 @@ export const ProductDetailModal: React.FC = () => {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {selectedProduct.sizes.map((size) => {
+                {sizes.map((size, idx) => {
                   const isSelected = selectedSize === size;
                   return (
                     <button
-                      key={size}
+                      key={size + idx}
                       type="button"
                       onClick={() => setSelectedSize(size)}
                       className={`min-w-[44px] h-10 px-3 rounded-xl text-xs font-bold border transition-all ${

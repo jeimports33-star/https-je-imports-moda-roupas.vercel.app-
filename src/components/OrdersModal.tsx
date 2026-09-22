@@ -237,30 +237,35 @@ export const OrdersModal: React.FC = () => {
 
                 {/* Items list */}
                 <div className="space-y-2">
-                  {order.items.map((it) => (
+                  {(order.items || []).map((it) => (
                     <div key={it.id} className="flex items-center gap-3 text-xs bg-white p-2.5 rounded-xl border border-neutral-100">
                       <img
-                        src={it.product.images[0]}
-                        alt={it.product.name}
+                        src={it.product?.images?.[0] || 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=1000&q=80'}
+                        alt={it.product?.name || 'Produto'}
                         className="w-10 h-12 object-cover rounded-lg border shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-neutral-900 truncate">{it.product.name}</p>
+                        <p className="font-bold text-neutral-900 truncate">{it.product?.name || 'Produto'}</p>
                         <p className="text-[11px] text-neutral-500">
-                          {it.quantity}x {it.selectedSize} • {it.selectedColor.name}
+                          {it.quantity}x {it.selectedSize || 'M'} • {it.selectedColor?.name || 'Padrão'}
                         </p>
                       </div>
                       <span className="font-bold text-neutral-900">
-                        {formatCurrency(it.product.price * it.quantity)}
+                        {formatCurrency((it.product?.price || 0) * (it.quantity || 1))}
                       </span>
                     </div>
                   ))}
                 </div>
 
                 {/* Address info */}
-                <p className="text-[11px] text-neutral-500 pt-1">
-                  Entrega para: <strong>{order.customer.name}</strong> • {order.customer.address.street}, {order.customer.address.number}, {order.customer.address.city}/{order.customer.address.state}
-                </p>
+                {order.customer && (
+                  <p className="text-[11px] text-neutral-500 pt-1">
+                    Entrega para: <strong>{order.customer.name}</strong>
+                    {order.customer.address && (
+                      <> • {order.customer.address.street || ''}, {order.customer.address.number || ''}, {order.customer.address.city || ''}/{order.customer.address.state || ''}</>
+                    )}
+                  </p>
+                )}
               </div>
             ))
           )}

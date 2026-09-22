@@ -2,11 +2,12 @@
  * Utilities for formatting, shipping calculations, and simulated payment processing
  */
 
-export function formatCurrency(value: number): string {
+export function formatCurrency(value: number | undefined | null): string {
+  const num = typeof value === 'number' && !isNaN(value) ? value : 0;
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(value);
+  }).format(num);
 }
 
 export function formatCPF(value: string): string {
@@ -314,5 +315,33 @@ export function openWhatsAppOrderUrl(order: Parameters<typeof buildWhatsAppOrder
   const message = buildWhatsAppOrderMessage(order);
   const encoded = encodeURIComponent(message);
   return `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encoded}`;
+}
+
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Fallback
+  }
+
+  try {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.top = '-9999px';
+    textArea.style.left = '-9999px';
+    textArea.setAttribute('readonly', '');
+    document.body.appendChild(textArea);
+    textArea.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    return ok;
+  } catch (e) {
+    console.warn('Copy failed:', e);
+    return false;
+  }
 }
 

@@ -142,9 +142,9 @@ export const CatalogFilter: React.FC<{ totalCount: number }> = ({ totalCount }) 
           <input
             id="filter-price-slider"
             type="range"
-            min={80}
-            max={600}
-            step={20}
+            min={50}
+            max={2000}
+            step={50}
             value={filters.maxPrice}
             onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: Number(e.target.value) }))}
             className="w-28 sm:w-36 accent-neutral-900 h-1.5 bg-neutral-200 rounded-lg cursor-pointer"

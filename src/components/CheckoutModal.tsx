@@ -38,7 +38,8 @@ import {
   STORE_WHATSAPP_NUMBER,
   STORE_WHATSAPP_DISPLAY,
   buildWhatsAppOrderMessage,
-  openWhatsAppOrderUrl
+  openWhatsAppOrderUrl,
+  copyToClipboard
 } from '../utils/paymentUtils';
 
 export const CheckoutModal: React.FC = () => {
@@ -122,14 +123,14 @@ export const CheckoutModal: React.FC = () => {
     return true;
   };
 
-  const handleCopyPix = (pixCode: string) => {
-    navigator.clipboard.writeText(pixCode);
+  const handleCopyPix = async (pixCode: string) => {
+    await copyToClipboard(pixCode);
     setCopiedPix(true);
     showToast('Código PIX Copia e Cola copiado com sucesso!', 'success');
     setTimeout(() => setCopiedPix(false), 3000);
   };
 
-  const handleCopyOrderText = () => {
+  const handleCopyOrderText = async () => {
     if (!completedOrder) return;
     const msg = buildWhatsAppOrderMessage({
       id: completedOrder.id,
@@ -142,7 +143,7 @@ export const CheckoutModal: React.FC = () => {
       paymentMethod: completedOrder.paymentMethod,
       customerNote: completedOrder.customerNote,
     });
-    navigator.clipboard.writeText(msg);
+    await copyToClipboard(msg);
     setCopiedMessage(true);
     showToast('Texto do pedido copiado!', 'success');
     setTimeout(() => setCopiedMessage(false), 3000);
@@ -450,21 +451,21 @@ export const CheckoutModal: React.FC = () => {
 
                   {/* Items mini list */}
                   <div className="max-h-56 overflow-y-auto space-y-2.5 pr-1">
-                    {cart.map((item) => (
+                    {(cart || []).map((item) => (
                       <div key={item.id} className="flex items-center gap-3 text-xs bg-white p-2.5 rounded-xl border border-neutral-200">
                         <img
-                          src={item.product.images[0]}
-                          alt={item.product.name}
+                          src={item.product?.images?.[0] || 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=1000&q=80'}
+                          alt={item.product?.name || 'Produto'}
                           className="w-12 h-14 object-cover rounded-lg border border-neutral-200 shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-neutral-900 truncate">{item.product.name}</p>
+                          <p className="font-semibold text-neutral-900 truncate">{item.product?.name || 'Produto'}</p>
                           <p className="text-[11px] text-neutral-500">
-                            {item.quantity}x Tam: <strong>{item.selectedSize}</strong> • Cor: {item.selectedColor.name}
+                            {item.quantity}x Tam: <strong>{item.selectedSize || 'M'}</strong> • Cor: {item.selectedColor?.name || 'Padrão'}
                           </p>
                         </div>
                         <span className="font-bold text-neutral-900 shrink-0">
-                          {formatCurrency(item.product.price * item.quantity)}
+                          {formatCurrency((item.product?.price || 0) * item.quantity)}
                         </span>
                       </div>
                     ))}
@@ -849,13 +850,13 @@ export const CheckoutModal: React.FC = () => {
                 <div className="pt-3 border-t border-neutral-200">
                   <p className="font-bold text-xs text-neutral-900 mb-2">Peças do Pedido:</p>
                   <div className="space-y-2">
-                    {completedOrder.items.map((item) => (
+                    {(completedOrder.items || []).map((item) => (
                       <div key={item.id} className="flex items-center justify-between text-xs">
                         <span>
-                          {item.quantity}x {item.product.name} ({item.selectedSize}, {item.selectedColor.name})
+                          {item.quantity}x {item.product?.name || 'Produto'} ({item.selectedSize || 'M'}, {item.selectedColor?.name || 'Padrão'})
                         </span>
                         <span className="font-bold text-neutral-900">
-                          {formatCurrency(item.product.price * item.quantity)}
+                          {formatCurrency((item.product?.price || 0) * item.quantity)}
                         </span>
                       </div>
                     ))}

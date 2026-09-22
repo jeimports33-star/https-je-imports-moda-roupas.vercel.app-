@@ -141,8 +141,8 @@ export const CartDrawer: React.FC = () => {
                   {/* Thumbnail */}
                   <div className="w-20 h-24 rounded-xl overflow-hidden bg-neutral-100 shrink-0 border border-neutral-200">
                     <img
-                      src={item.product.images[0]}
-                      alt={item.product.name}
+                      src={item.product?.images?.[0] || 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=1000&q=80'}
+                      alt={item.product?.name || 'Produto'}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -152,7 +152,7 @@ export const CartDrawer: React.FC = () => {
                     <div>
                       <div className="flex items-start justify-between gap-1">
                         <h4 className="font-semibold text-xs text-neutral-900 line-clamp-1">
-                          {item.product.name}
+                          {item.product?.name || 'Produto'}
                         </h4>
                         <button
                           type="button"
@@ -167,14 +167,14 @@ export const CartDrawer: React.FC = () => {
                       {/* Specs */}
                       <div className="flex items-center gap-2 mt-1 text-[11px] text-neutral-500">
                         <span className="font-bold text-neutral-800 bg-neutral-100 px-1.5 py-0.5 rounded">
-                          Tam: {item.selectedSize}
+                          Tam: {item.selectedSize || 'M'}
                         </span>
                         <span className="flex items-center gap-1">
                           <span 
                             className="w-2.5 h-2.5 rounded-full border border-neutral-300 inline-block"
-                            style={{ backgroundColor: item.selectedColor.hex }}
+                            style={{ backgroundColor: item.selectedColor?.hex || '#111' }}
                           />
-                          {item.selectedColor.name}
+                          {item.selectedColor?.name || 'Padrão'}
                         </span>
                       </div>
                     </div>
@@ -202,7 +202,7 @@ export const CartDrawer: React.FC = () => {
                       </div>
 
                       <span className="font-display font-bold text-sm text-neutral-950">
-                        {formatCurrency(item.product.price * item.quantity)}
+                        {formatCurrency((item.product?.price || 0) * item.quantity)}
                       </span>
                     </div>
                   </div>

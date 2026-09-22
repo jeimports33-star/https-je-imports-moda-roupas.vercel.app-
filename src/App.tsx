@@ -33,7 +33,7 @@ const StoreContent: React.FC = () => {
       }
 
       // Size filter
-      if (filters.size && !prod.sizes.includes(filters.size as any)) {
+      if (filters.size && !(prod.sizes || []).includes(filters.size as any)) {
         return false;
       }
 
@@ -43,18 +43,18 @@ const StoreContent: React.FC = () => {
       }
 
       // Max price filter
-      if (prod.price > filters.maxPrice) {
+      if ((prod.price || 0) > filters.maxPrice) {
         return false;
       }
 
       // Search query filter
       if (filters.search.trim()) {
         const q = filters.search.toLowerCase().trim();
-        const matchesName = prod.name.toLowerCase().includes(q);
-        const matchesCategory = prod.category.toLowerCase().includes(q);
-        const matchesSku = prod.sku.toLowerCase().includes(q);
-        const matchesDesc = prod.description.toLowerCase().includes(q);
-        const matchesSize = prod.sizes.some(s => s.toLowerCase().includes(q));
+        const matchesName = (prod.name || '').toLowerCase().includes(q);
+        const matchesCategory = (prod.category || '').toLowerCase().includes(q);
+        const matchesSku = (prod.sku || '').toLowerCase().includes(q);
+        const matchesDesc = (prod.description || '').toLowerCase().includes(q);
+        const matchesSize = (prod.sizes || []).some(s => (s || '').toLowerCase().includes(q));
         if (!matchesName && !matchesCategory && !matchesSku && !matchesDesc && !matchesSize) {
           return false;
         }
@@ -62,11 +62,13 @@ const StoreContent: React.FC = () => {
 
       return true;
     }).sort((a, b) => {
-      if (filters.sortBy === 'price-asc') return a.price - b.price;
-      if (filters.sortBy === 'price-desc') return b.price - a.price;
+      const priceA = typeof a.price === 'number' ? a.price : 0;
+      const priceB = typeof b.price === 'number' ? b.price : 0;
+      if (filters.sortBy === 'price-asc') return priceA - priceB;
+      if (filters.sortBy === 'price-desc') return priceB - priceA;
       if (filters.sortBy === 'discount') {
-        const discA = a.originalPrice ? (a.originalPrice - a.price) : 0;
-        const discB = b.originalPrice ? (b.originalPrice - b.price) : 0;
+        const discA = a.originalPrice ? (a.originalPrice - priceA) : 0;
+        const discB = b.originalPrice ? (b.originalPrice - priceB) : 0;
         return discB - discA;
       }
       if (filters.sortBy === 'newest') {

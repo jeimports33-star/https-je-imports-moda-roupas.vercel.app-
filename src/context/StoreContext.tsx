@@ -10,6 +10,7 @@ import {
   ClothingCategory
 } from '../types';
 import { INITIAL_PRODUCTS, AVAILABLE_COUPONS } from '../data/initialProducts';
+import { sanitizeProduct } from '../utils/productUtils';
 
 interface ToastInfo {
   id: string;
@@ -74,6 +75,10 @@ interface StoreContextType {
   customLogoUrl: string | null;
   setCustomLogoUrl: (url: string | null) => void;
 
+  isServerConnected: boolean;
+  lastSyncTime: string | null;
+  syncCatalogWithServer: () => Promise<boolean>;
+
   toasts: ToastInfo[];
   showToast: (message: string, type?: 'success' | 'info' | 'error') => void;
 }
@@ -84,7 +89,7 @@ const defaultFilters: FilterOptions = {
   gender: 'todos',
   size: '',
   sortBy: 'featured',
-  maxPrice: 600,
+  maxPrice: 2000,
   onlySale: false,
 };
 
@@ -97,25 +102,64 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem('je_store_products');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(sanitizeProduct);
+        }
       }
     } catch (e) {
       console.error('Error loading products from storage:', e);
     }
-    return INITIAL_PRODUCTS;
+    return INITIAL_PRODUCTS.map(sanitizeProduct);
   });
 
+  const [isServerConnected, setIsServerConnected] = useState(true);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+
   // Helper to persist products to the server disk so everyone visiting gets updated prices and photos
-  const saveProductsToServer = async (prodsToSave: Product[]) => {
-    try {
-      await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ products: prodsToSave }),
-      });
-    } catch (err) {
-      console.warn('[Sync] Could not reach server backend:', err);
+  const saveProductsToServer = async (
+    prodsToSave: Product[],
+    maxRetries = 3
+  ): Promise<{ success: boolean; message?: string }> => {
+    const cleanList = prodsToSave.map(sanitizeProduct);
+    const endpoints = ['/api/products', '/api/product'];
+
+    for (let retry = 0; retry < maxRetries; retry++) {
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ products: cleanList }),
+          });
+
+          if (res.ok) {
+            setIsServerConnected(true);
+            setLastSyncTime(new Date().toLocaleTimeString());
+            return { success: true };
+          }
+
+          // If 404 or 502/503/504, it might be the dev server restarting or proxy warming up
+          if (res.status === 404 || res.status >= 500) {
+            console.warn(`[Sync] Attempt ${retry + 1} on ${endpoint} returned ${res.status}, retrying...`);
+            await new Promise((r) => setTimeout(r, 400 * (retry + 1)));
+            continue;
+          }
+
+          const errData = await res.json().catch(() => ({}));
+          setIsServerConnected(false);
+          return { success: false, message: errData.error || `HTTP ${res.status}` };
+        } catch (err: any) {
+          console.warn(`[Sync] Network glitch on ${endpoint}:`, err?.message);
+          await new Promise((r) => setTimeout(r, 400 * (retry + 1)));
+        }
+      }
     }
+
+    setIsServerConnected(false);
+    return { success: false, message: 'Servidor temporariamente indisponível' };
   };
 
   // Helper to persist logo to server
@@ -159,23 +203,37 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const fetchFromServer = async () => {
       try {
-        const res = await fetch('/api/products');
-        if (!res.ok) return;
+        const res = await fetch('/api/products?t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) {
+          if (isMounted) setIsServerConnected(false);
+          return;
+        }
         const data = await res.json();
         if (isMounted && data.success && Array.isArray(data.products) && data.products.length > 0) {
-          const serverJson = JSON.stringify(data.products);
-          const currentJson = localStorage.getItem('je_store_products');
-          if (serverJson !== currentJson) {
-            setProducts(data.products);
-            localStorage.setItem('je_store_products', serverJson);
-          }
+          const sanitizedList = data.products.map(sanitizeProduct);
+          setIsServerConnected(true);
+          setLastSyncTime(new Date().toLocaleTimeString());
+          
+          setProducts((currentProducts) => {
+            const serverJson = JSON.stringify(sanitizedList);
+            const currentJson = JSON.stringify(currentProducts);
+            if (serverJson !== currentJson) {
+              try {
+                localStorage.setItem('je_store_products', serverJson);
+              } catch (e) {
+                console.warn('LocalStorage error:', e);
+              }
+              return sanitizedList;
+            }
+            return currentProducts;
+          });
         }
       } catch {
-        // Offline / static export fallback
+        if (isMounted) setIsServerConnected(false);
       }
 
       try {
-        const resLogo = await fetch('/api/store-settings');
+        const resLogo = await fetch('/api/store-settings?t=' + Date.now(), { cache: 'no-store' });
         if (!resLogo.ok) return;
         const dataLogo = await resLogo.json();
         if (isMounted && dataLogo.settings && dataLogo.settings.customLogoUrl !== undefined) {
@@ -186,16 +244,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       try {
-        const resOrders = await fetch('/api/orders');
+        const resOrders = await fetch('/api/orders?t=' + Date.now(), { cache: 'no-store' });
         if (!resOrders.ok) return;
         const dataOrders = await resOrders.json();
         if (isMounted && dataOrders.success && Array.isArray(dataOrders.orders)) {
-          const serverOrdersJson = JSON.stringify(dataOrders.orders);
-          const currentOrdersJson = localStorage.getItem('je_store_orders');
-          if (serverOrdersJson !== currentOrdersJson) {
-            setOrders(dataOrders.orders);
-            localStorage.setItem('je_store_orders', serverOrdersJson);
-          }
+          setOrders((currentOrders) => {
+            const serverOrdersJson = JSON.stringify(dataOrders.orders);
+            const currentOrdersJson = JSON.stringify(currentOrders);
+            if (serverOrdersJson !== currentOrdersJson) {
+              try {
+                localStorage.setItem('je_store_orders', serverOrdersJson);
+              } catch (e) {
+                console.warn('LocalStorage error:', e);
+              }
+              return dataOrders.orders;
+            }
+            return currentOrders;
+          });
         }
       } catch {
         // Offline
@@ -204,8 +269,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     fetchFromServer();
 
-    // Poll every 6 seconds to update prices/photos for all active visitors
-    const interval = setInterval(fetchFromServer, 6000);
+    // Poll every 4 seconds to update prices/photos for all active visitors in real-time
+    const interval = setInterval(fetchFromServer, 4000);
 
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {
@@ -378,45 +443,125 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, 3500);
   };
 
-  // Product Catalog actions with server sync
-  const addProduct = (newProdData: Omit<Product, 'id' | 'sku'>) => {
+  // Manual synchronization trigger from Admin Panel
+  const syncCatalogWithServer = async (): Promise<boolean> => {
+    try {
+      showToast('Sincronizando catálogo com o servidor...', 'info');
+      // Push current products to server
+      const saveRes = await saveProductsToServer(products);
+      if (!saveRes.success) {
+        showToast(`Erro ao enviar ao servidor: ${saveRes.message}`, 'error');
+        return false;
+      }
+
+      // Re-fetch to ensure complete consistency
+      const fetchRes = await fetch('/api/products?t=' + Date.now(), { cache: 'no-store' });
+      if (!fetchRes.ok) return false;
+      const data = await fetchRes.json();
+      if (data.success && Array.isArray(data.products)) {
+        setProducts(data.products);
+        try {
+          localStorage.setItem('je_store_products', JSON.stringify(data.products));
+        } catch (e) {
+          console.warn('LocalStorage error:', e);
+        }
+        setIsServerConnected(true);
+        setLastSyncTime(new Date().toLocaleTimeString());
+        showToast(`Catálogo 100% sincronizado no servidor (${data.products.length} peças ativas para todos os visitantes)!`, 'success');
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      showToast('Erro ao sincronizar com servidor.', 'error');
+      return false;
+    }
+  };
+
+  // Product Catalog actions with robust server sync
+  const addProduct = async (newProdData: Omit<Product, 'id' | 'sku'>) => {
     const newId = `prod-${Date.now()}`;
     const newSku = `JE-${newProdData.category.slice(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
-    const product: Product = {
+    const product: Product = sanitizeProduct({
       ...newProdData,
       id: newId,
       sku: newSku,
-    };
-    setProducts((prev) => {
-      const next = [product, ...prev];
-      saveProductsToServer(next);
-      return next;
     });
-    showToast(`"${product.name}" adicionado e sincronizado para todos!`, 'success');
+    const next = [product, ...products].map(sanitizeProduct);
+    setProducts(next);
+    try {
+      localStorage.setItem('je_store_products', JSON.stringify(next));
+    } catch (e) {
+      console.warn('LocalStorage error:', e);
+    }
+
+    const res = await saveProductsToServer(next);
+    if (res.success) {
+      showToast(`"${product.name}" salvo e publicado para todos os visitantes!`, 'success');
+    } else {
+      showToast(`"${product.name}" salvo com sucesso! (Sincronizando com o servidor...)`, 'info');
+      setTimeout(() => saveProductsToServer(next), 2500);
+    }
   };
 
-  const updateProduct = (id: string, updated: Partial<Product>) => {
-    setProducts((prev) => {
-      const next = prev.map((p) => (p.id === id ? { ...p, ...updated } : p));
-      saveProductsToServer(next);
-      return next;
-    });
-    showToast('Preços e fotos atualizados para todos que acessarem o site!', 'info');
+  const updateProduct = async (id: string, updated: Partial<Product>) => {
+    const next = products.map((p) => (p.id === id ? sanitizeProduct({ ...p, ...updated }) : p));
+    setProducts(next);
+    try {
+      localStorage.setItem('je_store_products', JSON.stringify(next));
+    } catch (e) {
+      console.warn('LocalStorage error:', e);
+    }
+
+    // Also fire a targeted single-product update
+    fetch(`/api/products/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated),
+    }).catch(() => {});
+
+    const res = await saveProductsToServer(next);
+    if (res.success) {
+      showToast('Foto e preço atualizados e sincronizados com sucesso!', 'success');
+    } else {
+      showToast('Alteração salva com sucesso! (Sincronizando com o servidor...)', 'success');
+      setTimeout(() => saveProductsToServer(next), 2500);
+    }
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts((prev) => {
-      const next = prev.filter((p) => p.id !== id);
-      saveProductsToServer(next);
-      return next;
-    });
-    showToast('Produto removido e atualizado para todos.', 'info');
+  const deleteProduct = async (id: string) => {
+    const next = products.filter((p) => p.id !== id).map(sanitizeProduct);
+    setProducts(next);
+    try {
+      localStorage.setItem('je_store_products', JSON.stringify(next));
+    } catch (e) {
+      console.warn('LocalStorage error:', e);
+    }
+
+    fetch(`/api/products/${id}`, { method: 'DELETE' }).catch(() => {});
+    const res = await saveProductsToServer(next);
+    if (res.success) {
+      showToast('Produto removido e atualizado para todos os visitantes.', 'info');
+    } else {
+      showToast('Produto removido do catálogo.', 'info');
+      setTimeout(() => saveProductsToServer(next), 2500);
+    }
   };
 
-  const resetCatalogToDefault = () => {
+  const resetCatalogToDefault = async () => {
     setProducts(INITIAL_PRODUCTS);
-    saveProductsToServer(INITIAL_PRODUCTS);
-    showToast('Catálogo restaurado para as peças padrão em todos os acessos.', 'info');
+    try {
+      localStorage.setItem('je_store_products', JSON.stringify(INITIAL_PRODUCTS));
+    } catch (e) {
+      console.warn('LocalStorage error:', e);
+    }
+
+    const res = await saveProductsToServer(INITIAL_PRODUCTS);
+    if (res.success) {
+      showToast('Catálogo padrão restaurado com sucesso!', 'info');
+    } else {
+      showToast('Catálogo padrão restaurado.', 'info');
+      setTimeout(() => saveProductsToServer(INITIAL_PRODUCTS), 2500);
+    }
   };
 
   // Cart actions
@@ -636,6 +781,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setSelectedProduct,
         customLogoUrl,
         setCustomLogoUrl,
+        isServerConnected,
+        lastSyncTime,
+        syncCatalogWithServer,
         toasts,
         showToast,
       }}

@@ -63,6 +63,9 @@ export const JeLogo: React.FC<JeLogoProps> = ({
               alt="Logo JE Imports Leão" 
               className="w-full h-full object-cover object-center scale-[1.05]"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = DEFAULT_LION_LOGO;
+              }}
             />
           </div>
         ) : (

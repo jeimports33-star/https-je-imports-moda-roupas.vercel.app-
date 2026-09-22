@@ -18,7 +18,8 @@ import {
   OFFICIAL_PIX_CITY,
   OFFICIAL_PIX_SVG,
   OFFICIAL_PIX_DATA_URL,
-  formatCurrency
+  formatCurrency,
+  copyToClipboard
 } from '../utils/paymentUtils';
 import { useStore } from '../context/StoreContext';
 
@@ -131,15 +132,15 @@ export const PixQrCode: React.FC<PixQrCodeProps> = ({
     }
   }, [isZoomOpen, code]);
 
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(code);
+  const handleCopyCode = async () => {
+    await copyToClipboard(code);
     setCopiedCode(true);
     showToast('Código PIX Copia e Cola copiado com sucesso!', 'success');
     setTimeout(() => setCopiedCode(false), 3000);
   };
 
-  const handleCopyKey = () => {
-    navigator.clipboard.writeText(pixKey);
+  const handleCopyKey = async () => {
+    await copyToClipboard(pixKey);
     setCopiedKey(true);
     showToast('Chave PIX (E-mail) copiada com sucesso!', 'success');
     setTimeout(() => setCopiedKey(false), 3000);
